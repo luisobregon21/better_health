@@ -2,7 +2,15 @@
 
 A new Flutter project.
 
+## Prerequisites
+
+- Install Flutter
+- run  `Flutter Doctor` and install missing dependacies
+- Install Android and IOS Studios
+
 ## Getting Started
+
+To Run app: `Flutter Run`
 
 This project is a starting point for a Flutter application.
 
