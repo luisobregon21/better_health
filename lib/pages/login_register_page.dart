@@ -15,6 +15,9 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+  final TextEditingController _controllerUsername = TextEditingController();
+  final TextEditingController _controllerConfirmPassword =
+      TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
     try {
@@ -34,10 +37,13 @@ class _LoginPageState extends State<LoginPage> {
       await Auth().createUserWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
+        username: '', // Add the username parameter if required by your API
+        confirmationPassword: _controllerPassword
+            .text, // Add the confirmation password parameter if required by your API
       );
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
       setState(() {
-        errorMessage = e.message;
+        errorMessage = e.toString();
       });
     }
   }
@@ -96,6 +102,8 @@ class _LoginPageState extends State<LoginPage> {
               children: <Widget>[
                 _entryField('email', _controllerEmail),
                 _entryField('password', _controllerPassword),
+                _entryField('username', _controllerUsername),
+                _entryField('confirmPassword', _controllerConfirmPassword),
                 _errorMessage(),
                 _submitButton(),
                 _loginOrRegisterButton(),
