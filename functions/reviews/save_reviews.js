@@ -19,7 +19,7 @@ exports.saveReviews = async (req, res) => {
                         createdAt: createdAt,
                         updatedAt: Timestamp.now(),
                     })
-                } catch (error) {
+                } catch (err) {
                     return res.status(500).json({ error: err })
                 }
 

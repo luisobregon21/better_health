@@ -3,7 +3,7 @@ const { db } = require('../admin_init')
 exports.allReviews = async (req, res) => {
     try {
         const usersSnapshot = await db.collection('reviews').get()
-        reviews = []
+        const reviews = []
         usersSnapshot.docs.map((doc) => {
             const {relative_time_description, text, rating} = doc.data().review
             const review = {

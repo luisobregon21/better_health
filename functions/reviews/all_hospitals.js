@@ -3,7 +3,7 @@ const { db } = require('../admin_init')
 exports.allHospitals = async () => {
     try {
         const usersSnapshot = await db.collection('hospitals').get()
-        hospitals = []
+        const hospitals = []
         usersSnapshot.docs.map((doc) => {
             hospitals.push(doc.data())
         })
