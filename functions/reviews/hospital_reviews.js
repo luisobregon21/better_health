@@ -6,7 +6,8 @@ const { GOOGLE_API_KEY } = process.env;
 
 
 async function fetchAndSaveHospitals(nextPageToken = null) {
-    let hospitalsPR = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=hospitals+in+Puerto+Rico&key=${GOOGLE_API_KEY}`;
+    const variations = ['hospitals+in+Puerto+Rico', 'Puerto+Rico+hospitals', 'medical+centers+in+Puerto+Rico', 'emergency+services+in+Puerto+Rico'];
+    let hospitalsPR = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${variations[Math.floor(Math.random() * variations.length)]}&key=${GOOGLE_API_KEY}`;
     if (nextPageToken) {
         hospitalsPR += `&page_token=${nextPageToken}`;
     }
