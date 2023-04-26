@@ -3,34 +3,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const MapPage()),
-            );
-          },
-          child: const Text('Open map'),
-        ),
-      ),
-    );
-  }
-}
-
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
 
@@ -39,6 +11,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  late GoogleMapController _controller;
   late Future<LatLng> _currentLocation;
   final Set<Marker> _markers = {};
 
@@ -94,7 +67,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Map'),
+          title: const Text('BetterHealth'),
         ),
         body: FutureBuilder<LatLng>(
           future: _currentLocation,
@@ -103,18 +76,33 @@ class _MapPageState extends State<MapPage> {
               return Stack(
                 children: [
                   GoogleMap(
+                    onMapCreated: (controller) => _controller = controller,
                     initialCameraPosition: CameraPosition(
-                      target: snapshot.data!,
+                      target: snapshot.data ?? LatLng(0, 0),
                       zoom: 14,
                     ),
-                    markers: _markers,
+                    markers: Set.from([
+                      Marker(
+                        markerId: MarkerId('Current Location'),
+                        position: snapshot.data ?? LatLng(0, 0),
+                        infoWindow: InfoWindow(title: 'You are here'),
+                      )
+                    ]),
                   ),
                   Positioned(
                     top: 16,
                     right: 16,
                     child: FloatingActionButton(
-                      onPressed: _updateMarkers,
-                      child: const Icon(Icons.refresh),
+                      onPressed: () async {
+                        final loc = await _getCurrentLocation();
+                        _controller.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                                CameraPosition(target: loc, zoom: 14)));
+                        setState(() {
+                          _currentLocation = Future.value(loc);
+                        });
+                      },
+                      child: Icon(Icons.my_location),
                     ),
                   ),
                 ],
