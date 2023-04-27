@@ -1,7 +1,11 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -19,7 +23,10 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _requestLocationPermission();
-    _currentLocation = _getCurrentLocation();
+    _currentLocation = _getCurrentLocation().then((location) {
+      _updateMarkers();
+      return location;
+    });
   }
 
   Future<void> _requestLocationPermission() async {
@@ -38,25 +45,44 @@ class _MapPageState extends State<MapPage> {
     return LatLng(position.latitude, position.longitude);
   }
 
-  Future<List<LatLng>> _getNearbyHospitals(LatLng currentPosition) async {
-    // Use your preferred APIs or libraries to fetch the list of nearby hospitals.
-    // For example, you can use the Google Places API.
-    // Here's an example using mock data:
-    return [
-      LatLng(37.785808, -122.406417), // San Francisco General Hospital
-      LatLng(37.761549, -122.415601), // St. Mary's Medical Center
-      LatLng(37.773447, -122.437935), // UCSF Medical Center
-    ];
+  Future<List<Marker>> _getNearbyHospitals(LatLng currentPosition) async {
+    final apiKey =
+        'AIzaSyDqh1G3nYw3tAUG1BWpDhD0BBMT7vxTSho'; // Replace with your Google Places API key
+    final radius = 5000; // The search radius in meters
+    final location =
+        '${currentPosition.latitude},${currentPosition.longitude}'; // The user's current location
+
+    final url =
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$location&radius=$radius&type=hospital&key=$apiKey';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      if (data['status'] == 'OK') {
+        final hospitals = List<Map<String, dynamic>>.from(data['results']);
+
+        return hospitals
+            .map((hospital) => Marker(
+                  markerId: MarkerId(hospital['place_id']),
+                  position: LatLng(hospital['geometry']['location']['lat'],
+                      hospital['geometry']['location']['lng']),
+                  infoWindow:
+                      InfoWindow(title: hospital['name'], snippet: 'Hospital'),
+                ))
+            .toList();
+      } else {
+        throw Exception('Error: ${data['error_message']}');
+      }
+    } else {
+      throw Exception('Error: ${response.reasonPhrase}');
+    }
   }
 
   Future<void> _updateMarkers() async {
     final nearbyHospitals = await _getNearbyHospitals(await _currentLocation);
-    final updatedMarkers = nearbyHospitals
-        .map((hospital) => Marker(
-            markerId: MarkerId(hospital.toString()),
-            position: hospital,
-            infoWindow: InfoWindow(title: 'Hospital')))
-        .toSet();
+    final updatedMarkers = nearbyHospitals.toSet();
     setState(() {
       _markers.clear();
       _markers.addAll(updatedMarkers);
@@ -86,7 +112,8 @@ class _MapPageState extends State<MapPage> {
                         markerId: MarkerId('Current Location'),
                         position: snapshot.data ?? LatLng(0, 0),
                         infoWindow: InfoWindow(title: 'You are here'),
-                      )
+                      ),
+                      ..._markers,
                     ]),
                   ),
                   Positioned(
