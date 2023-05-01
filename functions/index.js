@@ -6,6 +6,7 @@ const { withAuth } = require('./firebaseAuth');
 // const { saveHospitalReviews } = require('./reviews/hospital_reviews')
 // const { saveReviews } = require('./reviews/save_reviews')
 const { allReviews } = require('./reviews/all_reviews')
+const {getOverallSentiment} = require('./model/classify_reviews')
 
 const express = require('express');
 const app = express();
@@ -32,5 +33,6 @@ app.put('/logout', withAuth, usersLogout);
 // app.get('/getHospitalData', saveHospitalReviews);
 // app.put('/saveReviews', saveReviews)
 app.get('/getReviews', allReviews)
+app.get('/getReviewSentiments', getOverallSentiment)
 
 exports.api = functions.runWith(runtimeOpts).https.onRequest(app);
