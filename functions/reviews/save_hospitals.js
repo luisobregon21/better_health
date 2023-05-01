@@ -4,6 +4,7 @@ const axios = require('axios')
 const path = require('path')
 require('dotenv').config({ 'path': path.resolve(__dirname, '../../.env') });
 const { GOOGLE_API_KEY } = process.env;
+const { v4: uuidv4 } = require('uuid');
 
 
 async function getHospitalReviews(placeId) {
@@ -38,6 +39,25 @@ exports.saveHospitalInfo = async (hospital) => {
         reviews,
         updatedAt: Timestamp.now(),
       });
+
+      if (reviews) {
+        reviews.map(async (review) => {
+          const id = uuidv4()
+          const docRef = db.collection('reviews').doc(id);
+
+          try {
+            await docRef.set({
+              review,
+              placeId,
+              createdAt: Timestamp.now(),
+              updatedAt: Timestamp.now(),
+            })
+          } catch (err) {
+            return err
+          }
+
+        })
+      }
     }
   } catch (error) {
     console.error(`Error saving hospital ${placeId}: ${error}`);

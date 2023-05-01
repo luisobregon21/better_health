@@ -5,8 +5,9 @@ const { usersLogout } = require('./users/userLogout');
 const { withAuth } = require('./firebaseAuth');
 // const { saveHospitalReviews } = require('./reviews/hospital_reviews')
 // const { saveReviews } = require('./reviews/save_reviews')
-const { allReviews } = require('./reviews/all_reviews')
-const {getOverallSentiment} = require('./model/classify_reviews')
+const { allReviews } = require('./reviews/all_reviews');
+const { getOverallSentiment } = require('./model/classify_reviews');
+const { getHospitalById } = require('./reviews/get_hospital_by_id');
 
 const express = require('express');
 const app = express();
@@ -14,7 +15,7 @@ const app = express();
 const runtimeOpts = {
     timeoutSeconds: 540,
     memory: '1GB'
-}
+};
 
 
 const cors = require('cors');
@@ -32,7 +33,7 @@ app.put('/logout', withAuth, usersLogout);
 // only run once
 // app.get('/getHospitalData', saveHospitalReviews);
 // app.put('/saveReviews', saveReviews)
-app.get('/getReviews', allReviews)
-app.get('/getReviewSentiments', getOverallSentiment)
-
+app.get('/getReviews', allReviews);
+app.get('/getReviewSentiments', getOverallSentiment);
+app.get('/getHospitalById', getHospitalById);
 exports.api = functions.runWith(runtimeOpts).https.onRequest(app);
