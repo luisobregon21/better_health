@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,33 +7,24 @@ import 'dart:convert';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
-
   @override
   _MapPageState createState() => _MapPageState();
 }
 
 class _MapPageState extends State<MapPage> {
   late GoogleMapController _controller;
-  late Future<LatLng> _currentLocation;
   final Set<Marker> _markers = {};
-
   @override
   void initState() {
     super.initState();
     _requestLocationPermission();
-    _currentLocation = _getCurrentLocation().then((location) {
-      _updateMarkers();
-      return location;
-    });
   }
 
   Future<void> _requestLocationPermission() async {
     final permissionStatus = await Permission.location.request();
     if (permissionStatus.isGranted) {
-      // Permission granted
-      final currLoc = await _currentLocation;
-    } else {
-      // Permission denied
+      _getCurrentLocation().then((location) => _getNearbyHospitals(location)
+          .then((hospitals) => setState(() => _markers.addAll(hospitals))));
     }
   }
 
@@ -46,30 +35,27 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<List<Marker>> _getNearbyHospitals(LatLng currentPosition) async {
-    final apiKey =
-        'AIzaSyDqh1G3nYw3tAUG1BWpDhD0BBMT7vxTSho'; // Replace with your Google Places API key
-    final radius = 5000; // The search radius in meters
+    const apiKey = 'AIzaSyDqh1G3nYw3tAUG1BWpDhD0BBMT7vxTSho';
+    const radius = 5000; // The search radius in meters
     final location =
         '${currentPosition.latitude},${currentPosition.longitude}'; // The user's current location
-
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$location&radius=$radius&type=hospital&key=$apiKey';
-
     final response = await http.get(Uri.parse(url));
-
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-
       if (data['status'] == 'OK') {
         final hospitals = List<Map<String, dynamic>>.from(data['results']);
-
         return hospitals
             .map((hospital) => Marker(
                   markerId: MarkerId(hospital['place_id']),
                   position: LatLng(hospital['geometry']['location']['lat'],
                       hospital['geometry']['location']['lng']),
-                  infoWindow:
-                      InfoWindow(title: hospital['name'], snippet: 'Hospital'),
+                  infoWindow: InfoWindow(
+                    title: hospital['name'],
+                    snippet: 'Hospital',
+                    onTap: () => postPlaceId(hospital),
+                  ),
                 ))
             .toList();
       } else {
@@ -80,13 +66,17 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<void> _updateMarkers() async {
-    final nearbyHospitals = await _getNearbyHospitals(await _currentLocation);
-    final updatedMarkers = nearbyHospitals.toSet();
-    setState(() {
-      _markers.clear();
-      _markers.addAll(updatedMarkers);
-    });
+  Future<void> postPlaceId(Map<String, dynamic> hospital) async {
+    final url = Uri.parse('endpoint');
+    final body = {hospital};
+    final encodedBody = json.encode(body);
+    final response = await http.post(url, body: encodedBody);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      // TODO pass the response to the ml model endpoint
+      final resData = '';
+    } else {
+      print('Error: ${response.reasonPhrase}');
+    }
   }
 
   @override
@@ -96,25 +86,26 @@ class _MapPageState extends State<MapPage> {
           title: const Text('BetterHealth'),
         ),
         body: FutureBuilder<LatLng>(
-          future: _currentLocation,
+          future: _getCurrentLocation(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Stack(
                 children: [
                   GoogleMap(
-                    onMapCreated: (controller) => _controller = controller,
+                    onMapCreated: (controller) =>
+                        setState(() => _controller = controller),
                     initialCameraPosition: CameraPosition(
-                      target: snapshot.data ?? LatLng(0, 0),
+                      target: snapshot.data!,
                       zoom: 14,
                     ),
-                    markers: Set.from([
+                    markers: {
                       Marker(
-                        markerId: MarkerId('Current Location'),
-                        position: snapshot.data ?? LatLng(0, 0),
-                        infoWindow: InfoWindow(title: 'You are here'),
+                        markerId: const MarkerId('Current Location'),
+                        position: snapshot.data!,
+                        infoWindow: const InfoWindow(title: 'You are here'),
                       ),
                       ..._markers,
-                    ]),
+                    },
                   ),
                   Positioned(
                     top: 16,
@@ -125,11 +116,8 @@ class _MapPageState extends State<MapPage> {
                         _controller.animateCamera(
                             CameraUpdate.newCameraPosition(
                                 CameraPosition(target: loc, zoom: 14)));
-                        setState(() {
-                          _currentLocation = Future.value(loc);
-                        });
                       },
-                      child: Icon(Icons.my_location),
+                      child: const Icon(Icons.my_location),
                     ),
                   ),
                 ],
