@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:better_health/api/api_client.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -54,7 +55,7 @@ class _MapPageState extends State<MapPage> {
                   infoWindow: InfoWindow(
                     title: hospital['name'],
                     snippet: 'Hospital',
-                    onTap: () => postPlaceId(hospital),
+                    onTap: () => ApiClient.postHospital(hospital),
                   ),
                 ))
             .toList();
@@ -63,19 +64,6 @@ class _MapPageState extends State<MapPage> {
       }
     } else {
       throw Exception('Error: ${response.reasonPhrase}');
-    }
-  }
-
-  Future<void> postPlaceId(Map<String, dynamic> hospital) async {
-    final url = Uri.parse('endpoint');
-    final body = {hospital};
-    final encodedBody = json.encode(body);
-    final response = await http.post(url, body: encodedBody);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      // TODO pass the response to the ml model endpoint
-      final resData = '';
-    } else {
-      print('Error: ${response.reasonPhrase}');
     }
   }
 

@@ -35,5 +35,5 @@ app.put('/logout', withAuth, usersLogout);
 // app.put('/saveReviews', saveReviews)
 app.get('/getReviews', allReviews);
 app.get('/getReviewSentiments', getOverallSentiment);
-app.get('/getHospitalById', getHospitalById);
+app.post('/getHospitalById', getHospitalById);
 exports.api = functions.runWith(runtimeOpts).https.onRequest(app);
