@@ -43,6 +43,8 @@ dependencies:
   geolocator: ^9.0.2
   permission_handler: ^8.0.0+2
   rating_bar_flutter: ^1.0.2
+  flutter_dotenv: ^5.0.2
+  sliding_up_panel: ^2.0.0+1
 
 dev_dependencies:
   flutter_test:
@@ -69,7 +71,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
-
+  assets:
+    - .env
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

@@ -74,51 +74,42 @@ class ApiClient {
     }
   }
 
-  static Future<void> postHospital(Map<String, dynamic> hospital) async {
-    const path = 'getReviews';
-    var client = http.Client();
+  static Future<dynamic> postHospital(Map<String, dynamic> hospital) async {
+    const path = 'getHospitalById';
     final url = Uri.parse('$_baseUrl$path');
     final data = jsonEncode({"hospital": hospital});
-    // ignore: unnecessary_cast
-    try {
-      print("my url is: $url");
-
-      final response = await client.get(
-          Uri.parse(
-              'http://localhost:5001/betterhealth-f9c79/us-central1/api/getReviews'),
-          headers: {
-            'Access-Control-Allow-Origin':
-                '*', // Replace * with your desired origin domain
-            'Access-Control-Allow-Methods':
-                'POST, GET, OPTIONS', // List of allowed HTTP methods
-            'Access-Control-Allow-Headers':
-                'Origin, Content-Type' // List of allowed headers
-          });
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-    } catch (e) {
-      print('Error: $e');
+    final response = await http.post(url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: data);
+    if (response.statusCode == 200) {
+      final resData = jsonDecode(response.body)['reviews'];
+      if (resData.isEmpty) {
+        print("no data");
+      } else {
+        final classifiedReviews = postReviews(resData);
+        return classifiedReviews;
+      }
+    } else {
+      throw Exception('request was unsuccessful: ${response.statusCode}');
     }
+  }
 
-    // try {
-    //   final response = await http.post(
-    //     url,
-    //     headers: <String, String>{
-    //       'Content-Type': 'application/json; charset=UTF-8',
-    //     },
-    //     body: jsonEncode({"hospital": hospital}),
-    //   );
-    //   print(response);
-    //   if (response.statusCode >= 200) {
-    //     // TODO pass the response to the ml model endpoint
-    //     // final resData = '';
-    //     print("success has happened $response");
-    //   } else {
-    //     throw Exception('request was unsuccessful: ${response.statusCode}');
-    //   }
-    // } catch (e) {
-    //   print(e);
-    // }
+  static Future<dynamic> postReviews(reviews) async {
+    const path = 'getReviewSentiments';
+    final url = Uri.parse('$_baseUrl$path');
+    final data = jsonEncode({"texts": reviews});
+    final response = await http.post(url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: data);
+    if (response.statusCode == 200) {
+      final classifiedReviews = jsonDecode(response.body);
+      return classifiedReviews;
+    } else {
+      throw Exception('request was unsuccessful: ${response.statusCode}');
+    }
   }
 }
