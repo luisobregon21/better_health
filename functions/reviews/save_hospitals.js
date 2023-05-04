@@ -7,7 +7,7 @@ const { GOOGLE_API_KEY } = process.env;
 const { v4: uuidv4 } = require('uuid');
 
 
-async function getHospitalReviews(placeId) {
+const getHospitalReviews = async (placeId) => {
   const hospitalbyId = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,reviews&key=${GOOGLE_API_KEY}`;
   try {
     const response = await axios.get(hospitalbyId);
@@ -19,14 +19,15 @@ async function getHospitalReviews(placeId) {
   }
 }
 
-exports.saveHospitalInfo = async (hospital) => {
-  const { name, place_id: placeId, geometry } = hospital;
+const saveHospitalInfo = async (hospital) => {
+  const { name, place_id: placeId } = hospital;
   const docRef = db.collection('hospitals').doc(placeId);
+  const geometry = hospital?.geometry ? hospital?.geometry : '';
   try {
     await docRef.set({
-      name,
-      placeId,
-      geometry,
+      name: name,
+      placeId: placeId,
+      geometry: geometry,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -64,4 +65,7 @@ exports.saveHospitalInfo = async (hospital) => {
   }
 }
 
-
+module.exports = {
+  getHospitalReviews,
+  saveHospitalInfo
+}
