@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:better_health/api/api_client.dart';
+import 'package:rating_bar_flutter/rating_bar_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class MapPage extends StatefulWidget {
@@ -168,18 +169,49 @@ class PanelWidget extends StatelessWidget {
         children: <Widget>[
           SizedBox(height: 12),
           buidDragHandle(),
-          SizedBox(height: 18),
-          Center(
-            child: Text(
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundImage: hospData.containsKey('hospital')
+                    ? NetworkImage(hospData['hospital']['icon'])
+                    : null,
+              ),
+              SizedBox(
+                width: 16,
+              ),
+              Text(
                 hospData.containsKey('hospital')
                     ? hospData['hospital']['name']
                     : '',
-                style: Theme.of(context).textTheme.titleLarge),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Overall Score",
+            style: TextStyle(fontSize: 18),
+          ),
+          SizedBox(height: 8),
+          RatingBarFlutter(
+            initialRating: hospData.containsKey('classifiedReviews')
+                ? hospData['classifiedReviews']['overallScore']
+                : 0,
+            size: 30,
+            filledIcon: Icons.star,
+            emptyIcon: Icons.star_border,
+            halfFilledIcon: Icons.star_half,
+            isHalfAllowed: true,
+            onRatingChanged: (rating) {
+              print(rating);
+            },
           ),
         ],
       );
 
   Widget buidDragHandle() => GestureDetector(
+        onTap: togglePanel,
         child: Center(
           child: Container(
             width: 30,
@@ -190,7 +222,6 @@ class PanelWidget extends StatelessWidget {
             ),
           ),
         ),
-        onTap: togglePanel,
       );
 
   void togglePanel() => panelController.isPanelOpen
