@@ -1,9 +1,16 @@
-# better_health
+<h4 align="center">
+<div>
+<img src="https://user-images.githubusercontent.com/90788004/236549111-b99635c1-097f-4876-837d-a9681735094b.png">
+</div>
+Analyze Hospital's Reviews throught our mobile app.
+<br><br>
+<a href='https://docs.google.com/presentation/d/1XHNWggw_9l6glfHMKw_hIdgS4_Vj_a3PjzWW6bVgBMU/edit?usp=sharing'><img src="https://img.shields.io/badge/Presentation-blue?style=for-the-badge"></a>
+</h4>
 
-A new Flutter project.
+## Mission
+Simplify the process of scouring the internet for good hospitals throught the use of Machine Learning. 
 
 ## Prerequisites
-
 - Install Flutter
 - run  `Flutter Doctor` and install missing dependacies
 - Install Android and IOS Studios
@@ -25,4 +32,4 @@ samples, guidance on mobile development, and a full API reference.
 
 ## License
 
-Copyright © 2023, [Luis Obregon](https://github.com/luisobregon21), [Jonathan Rivera](https://github.com/jhonaRiver)
+Copyright © 2023, [Luis Obregon](https://github.com/luisobregon21), [Jhonatan Rivera](https://github.com/jhonaRiver)
