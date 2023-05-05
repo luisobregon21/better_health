@@ -2,7 +2,7 @@
 <div>
 <img src="https://user-images.githubusercontent.com/90788004/236549111-b99635c1-097f-4876-837d-a9681735094b.png">
 </div>
-Analyze Hospital's Reviews throught our mobile app.
+Analyze Hospital's Reviews through our mobile app.
 <br><br>
 <a href='https://docs.google.com/presentation/d/1XHNWggw_9l6glfHMKw_hIdgS4_Vj_a3PjzWW6bVgBMU/edit?usp=sharing'><img src="https://img.shields.io/badge/Presentation-blue?style=for-the-badge"></a>
 </h4>
