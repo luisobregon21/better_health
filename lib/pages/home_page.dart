@@ -89,7 +89,11 @@ class _MapPageState extends State<MapPage> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('BetterHealth'),
+          title: Center(
+            child: Image.asset('assets/BetterHealthLogo.png'),
+          ),
+          toolbarHeight: 90,
+          backgroundColor: Colors.white,
         ),
         body: FutureBuilder<LatLng>(
           future: _getCurrentLocation(),
