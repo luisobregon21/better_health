@@ -6,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:better_health/api/api_client.dart';
-import 'package:rating_bar_flutter/rating_bar_flutter.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class MapPage extends StatefulWidget {
@@ -20,7 +19,7 @@ class _MapPageState extends State<MapPage> {
   final panelController = PanelController();
   final Set<Marker> _markers = {};
   late Map<String, dynamic> hospData = {};
-  // bool _markerTapped = false;
+  bool _markerTapped = false;
 
   @override
   void initState() {
@@ -78,13 +77,14 @@ class _MapPageState extends State<MapPage> {
         'hospital': hospital,
         'classifiedReviews': classifiedReviews,
       };
-      // _markerTapped = true;
+      _markerTapped = true;
     });
+    print(hospData['classifiedReviews']);
   }
 
   @override
   Widget build(BuildContext context) {
-    final panelHeightClosed = MediaQuery.of(context).size.height * .1;
+    final panelHeightClosed = MediaQuery.of(context).size.height * .18;
     final panelHeightOpen = MediaQuery.of(context).size.height * .8;
 
     return Scaffold(
@@ -99,7 +99,7 @@ class _MapPageState extends State<MapPage> {
                 children: [
                   SlidingUpPanel(
                     controller: panelController,
-                    minHeight: panelHeightClosed,
+                    minHeight: _markerTapped ? panelHeightClosed : 0,
                     maxHeight: panelHeightOpen,
                     panelBuilder: (controller) => PanelWidget(
                         hospData: hospData,
@@ -173,6 +173,7 @@ class PanelWidget extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 30,
+                backgroundColor: Colors.white,
                 backgroundImage: hospData.containsKey('hospital')
                     ? NetworkImage(hospData['hospital']['icon'])
                     : null,
@@ -180,32 +181,57 @@ class PanelWidget extends StatelessWidget {
               SizedBox(
                 width: 16,
               ),
-              Text(
-                hospData.containsKey('hospital')
-                    ? hospData['hospital']['name']
-                    : '',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+              Expanded(
+                child: Text(
+                  hospData.containsKey('hospital')
+                      ? hospData['hospital']['name']
+                      : '',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              )
             ],
           ),
           SizedBox(height: 16),
           Text(
-            "Overall Score",
+            "Overall Review:",
             style: TextStyle(fontSize: 18),
           ),
-          SizedBox(height: 8),
-          RatingBarFlutter(
-            initialRating: hospData.containsKey('classifiedReviews')
-                ? hospData['classifiedReviews']['overallScore']
-                : 0,
-            size: 30,
-            filledIcon: Icons.star,
-            emptyIcon: Icons.star_border,
-            halfFilledIcon: Icons.star_half,
-            isHalfAllowed: true,
-            onRatingChanged: (rating) {
-              print(rating);
-            },
+          Container(
+            height: 25.0,
+            width: 100.0,
+            decoration: BoxDecoration(
+                color: hospData.containsKey('classifiedReviews')
+                    ? hospData['classifiedReviews']['overall'] == 'positive'
+                        ? Colors.green
+                            .withOpacity(hospData['classifiedReviews']['score'])
+                        : hospData['classifiedReviews']['overall'] == 'negative'
+                            ? Colors.red.withOpacity(
+                                hospData['classifiedReviews']['score'])
+                            : Colors.grey.withOpacity(
+                                hospData['classifiedReviews']['score'])
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(10.0)),
+            child: Center(
+              child: Text(
+                hospData.containsKey('classifiedReviews')
+                    ? hospData['classifiedReviews']['overall']
+                    : '',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Reviews:",
+            style: TextStyle(fontSize: 18),
+          ),
+          KeywordsList(
+            keywords: hospData.containsKey('classifiedReviews')
+                ? hospData['classifiedReviews']['keywords']
+                : [],
           ),
         ],
       );
@@ -227,4 +253,43 @@ class PanelWidget extends StatelessWidget {
   void togglePanel() => panelController.isPanelOpen
       ? panelController.close()
       : panelController.open();
+}
+
+class KeywordsList extends StatelessWidget {
+  final List<dynamic> keywords;
+  const KeywordsList({Key? key, required this.keywords}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+        children: keywords
+            .map((keyword) => SizedBox(
+                  width: MediaQuery.of(context).size.width / 2 - 15,
+                  child: Container(
+                    margin: EdgeInsets.only(right: 10, bottom: 10),
+                    width: 100,
+                    height: 25,
+                    decoration: BoxDecoration(
+                        color: keyword['overall'] == 'positive'
+                            ? Colors.green
+                                .withOpacity(keyword['score'] as double)
+                            : keyword['overall'] == 'negative'
+                                ? Colors.red
+                                    .withOpacity(keyword['score'] as double)
+                                : Colors.grey
+                                    .withOpacity(keyword['score'] as double),
+                        borderRadius: BorderRadius.circular(10.0)),
+                    child: Center(
+                      child: Text(
+                        keyword['tag'],
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ))
+            .toList());
+  }
 }
